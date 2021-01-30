@@ -1,10 +1,12 @@
 import pathlib
 import tensorflow as tf
 import argparse
+import random
+
 """HyperParameters"""
 AUTOTUNE = tf.data.experimental.AUTOTUNE
-HEIGHT = 128
-WIDTH = 128
+HEIGHT = 576
+WIDTH = 576
 BATCH_SIZE = 32
 SHUFFLE = 1000
 
@@ -15,27 +17,45 @@ args = parser.parse_args()
 train_data_path = args.train_path
 val_data_path = args.val_path
 
+"""随机让图像做0，90，180，270度旋转"""
+def random_rot(image):
+    times = random.randint(0,3)
+    image = tf.image.rot90(image,k=times)
+    return image
+
 def resize_and_rescale(image, label):
-  image = tf.cast(image, tf.float32)
-  '''Size can be changed'''
-  image = tf.image.resize(image, [HEIGHT, WIDTH])
-  image = (image / 255.0)
-  return image, label
+    image = tf.cast(image, tf.float32)
+    '''Size can be changed'''
+    image = tf.image.resize(image, [HEIGHT, WIDTH])
+    #image = tf.image.resize_with_crop_or_pad(image, HEIGHT , WIDTH )
+    image = (image / 255.0)
+    return image, label
 
 def augment(image_label, seed):
-  image, label = image_label
-  image, label = resize_and_rescale(image, label)
-  image = tf.image.resize_with_crop_or_pad(image, HEIGHT + 6, WIDTH + 6)
-  # Make a new seed
-  new_seed = tf.random.experimental.stateless_split(seed, num=1)[0, :]
-  # Random crop back to the original size
-  image = tf.image.stateless_random_crop(
-      image, size=[HEIGHT, WIDTH, 3], seed=seed)
-  # Random brightness
-  image = tf.image.stateless_random_brightness(
-      image, max_delta=0.5, seed=new_seed)
-  image = tf.clip_by_value(image, 0, 1)
-  return image, label
+    image, label = image_label
+    image, label = resize_and_rescale(image, label)
+    #随机左右翻转\上下翻转
+    image = tf.image.stateless_random_flip_left_right(image,seed=seed)
+    image = tf.image.stateless_random_flip_up_down(image,seed=seed)
+    #随机旋转
+    image = random_rot(image)
+    #随机亮度变化
+    image = tf.image.stateless_random_brightness(image,max_delta=0.3,seed=seed)
+    #随机对比度设置
+    image = tf.image.stateless_random_contrast(image,lower=0.8,upper=1,seed=seed)
+    #随机色相
+    image = tf.image.stateless_random_hue(image,max_delta=0.1,seed=seed)
+    #随机饱和度
+    image = tf.image.stateless_random_saturation(image,lower=0.5,upper=1,seed=seed)
+    #随机图片质量
+    image = tf.image.stateless_random_jpeg_quality(image, min_jpeg_quality=40,
+                        max_jpeg_quality=100, seed=seed)
+    #随机剪切
+    image = tf.image.stateless_random_crop(image,size=[576,576,3], seed=seed)
+
+    image = tf.clip_by_value(image, 0, 1)
+    return image, label
+
 
 def get_imgs_labels(dir_root):
     # Get all image paths, unsorted
@@ -72,7 +92,7 @@ def get_train_data():
     dataset = tf.data.Dataset.zip((img_ds, label_ds))
     # Create counter and zip together with train dataset
     counter = tf.data.experimental.Counter()
-    train_ds = tf.data.Dataset.zip((dataset, (counter, counter)))
+    train_ds = tf.data.Dataset.zip((dataset, (counter, counter)))   #(counter,counter) is seed
     train_ds = (
         train_ds
         .shuffle(SHUFFLE)
