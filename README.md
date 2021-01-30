@@ -1,1 +1,1 @@
-# scene_detection
+# Real-time Scene Detection
