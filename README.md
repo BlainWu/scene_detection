@@ -7,7 +7,7 @@ Real-time Scene Detection
 ©¦  ©À©¤train  
 ©¦  ©¦  ©À©¤1_Portrait  
 ©¦  ©¦  ©À©¤2_Group_portrait  
-©¦  ©¦  ©À©¤3_Kids
+©¦  ©¦  ©À©¤3_Kids  
 ©¦  ©¦  ©À©¤...  
 ©¦  ©¸©¤val  
 ©¦  ©¦  ©À©¤1_Portrait  
