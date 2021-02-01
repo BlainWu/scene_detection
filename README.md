@@ -2,6 +2,21 @@ Real-time Scene Detection
 ==================
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)  
 
+## 目录树
+├─dataset  
+│  ├─train  
+│  │  ├─1_Portrait  
+│  │  ├─2_Group_portrait  
+│  │  ├─3_Kids
+│  │  ├─...  
+│  └─val  
+│  │  ├─1_Portrait  
+│  │  ├─2_Group_portrait  
+│  │  ├─3_Kids   
+│  │  ├─...  
+├─DataReader.py  
+├─train.py  
+
 ## 图像增强和处理
 文件: **DataReader.py**  
 功能：加载训练集和验证集，并对其进行尺寸变化，打包成批。尤其对训练集进行数据增强，功能分布如下。  
@@ -11,5 +26,17 @@ Real-time Scene Detection
 > new_seed = tf.random.experimental.stateless_split(seed, num=1)[0, :]  
 
 ## 训练
+文件:train.py  
+
+**加载数据集**：
+```python
+train_ds = get_train_data()
+val_ds = get_val_data()
+```
+**数据格式**：  
+（图片，标签序号）的tuple，图片尺寸在DataReader.py的超参中可调。
+```
+<PrefetchDataset shapes: ((None, 576, 576, 3), (None,)), types: (tf.float32, tf.int64)>
+```
 
 ## 保存模型
