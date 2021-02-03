@@ -3,7 +3,7 @@ import tensorflow as tf
 from DataReader import get_train_data,get_val_data
 
 """choose your GPU"""
-os.environ['CUDA_VISIBLE_DEVICES'] = "0,1"
+os.environ['CUDA_VISIBLE_DEVICES'] = "2,3"
 
 """load data"""
 train_ds = get_train_data()
