@@ -5,10 +5,10 @@ import random
 
 """HyperParameters"""
 AUTOTUNE = tf.data.experimental.AUTOTUNE
-HEIGHT = 576
+HEIGHT = 384
 WIDTH = 576
 BATCH_SIZE = 32
-SHUFFLE = 1000
+SHUFFLE = 9897
 
 parser = argparse.ArgumentParser(description="Load and augment the dataset.")
 parser.add_argument('-tp','--train_path',default='./dataset/train',type=str)
@@ -34,6 +34,7 @@ def resize_and_rescale(image, label):
 def augment(image_label, seed):
     image, label = image_label
     image, label = resize_and_rescale(image, label)
+    """
     #随机左右翻转\上下翻转
     image = tf.image.stateless_random_flip_left_right(image,seed=seed)
     image = tf.image.stateless_random_flip_up_down(image,seed=seed)
@@ -52,12 +53,16 @@ def augment(image_label, seed):
                         max_jpeg_quality=100, seed=seed)
     #随机剪切
     image = tf.image.stateless_random_crop(image,size=[576,576,3], seed=seed)
-
+    """
     image = tf.clip_by_value(image, 0, 1)
     return image, label
 
+def index_to_onehot(index,class_num):
+    onehot = [0]*class_num
+    onehot[int(index)] = 1
+    return onehot
 
-def get_imgs_labels(dir_root):
+def get_imgs_labels(dir_root,onehot = False):
     # Get all image paths, unsorted
     data_root = pathlib.Path(dir_root)
     all_img_paths = list(data_root.glob("*/*"))
@@ -65,7 +70,11 @@ def get_imgs_labels(dir_root):
     # generate a dict,sorted (name,index)
     label_names = sorted(str(item.name) for item in data_root.glob('*/') if item.is_dir())
     label_names.sort(key=lambda x: int(x.split('_')[0]))
-    label_to_index = dict((name, index) for index, name in enumerate(label_names))
+    if onehot:
+        label_to_index = dict(
+            (name, index_to_onehot(index, len(label_names))) for index, name in enumerate(label_names))
+    else:
+        label_to_index = dict((name, index) for index, name in enumerate(label_names))
     all_img_labels = [label_to_index[pathlib.Path(path).parent.name]
                       for path in all_img_paths]
     # check the label and imgs
