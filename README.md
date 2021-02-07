@@ -21,6 +21,11 @@ Real-time Scene Detection
 ├─DataReader.py  
 ├─train.py  
 
+## ReLabel  
+**背景**：对于ImageNet这些图像分类数据集，存在一张图片包含多类的问题。在随机裁剪的训练策略下，这种问题会导致对分类器的误导。  
+**资料**：[ [arxiv论文](https://arxiv.org/pdf/2101.05022.pdf) ]------[ [github](https://github.com/naver-ai/relabel_imagenet) ]  
+
+ 
 
 ## 图像增强和处理
 文件: **DataReader.py**  
