@@ -1,27 +1,12 @@
-import os
+
 import pathlib
-from _ctypes_test import func
-
 import tensorflow as tf
-import argparse
 import random
-
-from PIL import Image
-
-from constant import *
+from config import *
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
-parser = argparse.ArgumentParser(description="Load and augment the dataset.")
-# parser.add_argument('-tp', '--train_path', default='/data/competition/classification/train_2_8', type=str)
-parser.add_argument('-tp', '--train_path', default='/data2/competition/classification/train_2_8', type=str)
-# parser.add_argument('-tp', '--train_path', default='./data/train_new', type=str)
-parser.add_argument('-vp', '--val_path', default='/data2/competition/classification/val_20', type=str)
 shuffle_size = 9940
-args = parser.parse_args()
-train_data_path = args.train_path
-val_data_path = args.val_path
-
 
 def random_rot(image):
     times = random.randint(0, 3)
@@ -57,7 +42,7 @@ def img_preprocess(image, image_size, normalization, train=True):
 
     if train:
         # if random.random() > 0.5:
-        image = tf.image.random_brightness(image, max_delta=0.15)
+        image = tf.image.random_brightness(image, max_delta=0.2)
         image = tf.image.random_contrast(image, lower=0.7, upper=1)
         #image = random_rot(image)
     # # # 随机色相

@@ -6,7 +6,7 @@ import time
 import tensorflow as tf
 from tensorflow.lite.python import interpreter_wrapper
 
-from constant import *
+from config import *
 from data_reader import get_train_data, get_val_data
 from utils import draw_train_history, timestamp_to_time, mkdir, WarmupExponentialDecay, get_FileCreateTime
 
@@ -38,7 +38,7 @@ print(train_name)
 mkdir(save_path)
 mkdir(train_log_path)
 mkdir(fine_log_path)
-copyfile("constant.py", os.path.join(save_path, "constant.py"))
+copyfile("config.py", os.path.join(save_path, "config.py"))
 
 '''Build Model'''
 
@@ -61,8 +61,8 @@ with strategy.scope():
         #tf.keras.layers.Dense(30, activation='softmax')
     ])
     '''LOSS AND OPTIMIZER!!!'''
-    losses = tf.losses.CategoricalCrossentropy(label_smoothing=0.2)
-    optimizer = tf.keras.optimizers.Adagrad(learning_rate=0.001)
+    losses = tf.losses.CategoricalCrossentropy(label_smoothing=0.05)
+    optimizer = tf.keras.optimizers.Adagrad(learning_rate=0.01)
 
     model.compile(optimizer=optimizer,
                   # loss='categorical_crossentropy',
@@ -119,7 +119,10 @@ results = model.evaluate(val_generator)
 
 print("test loss, test acc:", results)
 
-'''Part3 Convert to TFLite'''
+
+
+'''
+
 tf.saved_model.save(model, save_path)
 converter = tf.lite.TFLiteConverter.from_saved_model(save_path)
 tflite_model = converter.convert()
@@ -263,3 +266,4 @@ print("Top 3 Acc ", top3_correct / total)
 print("Top 3 Wrong ", sorted(top3_wrong_label.items(), key=lambda kv: (kv[1], kv[0]), reverse=True))
 print("Accuracy in category:", accuracy)
 print("Recall in category:", recall)
+'''

@@ -2,7 +2,7 @@ import pathlib
 import tensorflow as tf
 import argparse
 import random
-from constant import BATCH_SIZE
+from config import BATCH_SIZE
 
 """HyperParameters"""
 AUTOTUNE = tf.data.experimental.AUTOTUNE
