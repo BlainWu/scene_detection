@@ -4,20 +4,11 @@ from __future__ import print_function
 import time
 
 import tensorflow as tf
-from tensorflow.lite.python import interpreter_wrapper
-
 from config import *
 from data_reader import get_train_data, get_val_data
-from utils import draw_train_history, timestamp_to_time, mkdir, WarmupExponentialDecay, get_FileCreateTime
-
+from utils import draw_train_history, mkdir
 from shutil import copyfile
-
-import numpy as np
 import os
-from tensorflow.lite.python import interpreter as interpreter_wrapper
-
-from data_reader import load_image, img_preprocess
-from utils import get_FileCreateTime
 
 '''General Setting'''
 os.environ['CUDA_VISIBLE_DEVICES'] = GPU
@@ -45,6 +36,7 @@ copyfile("config.py", os.path.join(save_path, "config.py"))
 strategy = tf.distribute.MirroredStrategy()
 
 with strategy.scope():
+
     base_model = tf.keras.applications.MobileNetV3Large(input_shape=IMG_SHAPE,
                                                    include_top=False,
                                                    alpha=1.0,
@@ -116,7 +108,6 @@ history_fine = model.fit(train_generator,
 model.layers[2].rate = 0
 print("set dropout = 0")
 results = model.evaluate(val_generator)
-
 print("test loss, test acc:", results)
 
 

@@ -40,8 +40,12 @@ losses = tf.losses.CategoricalCrossentropy(label_smoothing=0.05)
 optimizer = tf.keras.optimizers.Adagrad(learning_rate=0.01)
 
 strategy = tf.distribute.MirroredStrategy()
-quantize_model = tfmot.quantization.keras.quantize_model
-
+cluster_weights = tfmot.clustering.keras.cluster_weights
+CentroidInitialization = tfmot.clustering.keras.CentroidInitialization
+clustering_params = {
+  'number_of_clusters': 16,
+  'cluster_centroids_init': CentroidInitialization.LINEAR
+}
 with strategy.scope():
     backbone = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=IMG_SHAPE,
                                                    include_top=False,
@@ -50,8 +54,8 @@ with strategy.scope():
                                                    )
 
     backbone.trainable = True
-    q_backbone = tfmot.quantization.keras.quantize_model(backbone)
-    q_backbone.summary()
+    c_backbone = cluster_weights(backbone, **clustering_params)
+    c_backbone.summary()
 
     #original_model.summary()
 

@@ -13,22 +13,26 @@ from tqdm import tqdm
 
 val_path = '/data2/competition/classification/val_true/'
 test_path = '/data2/competition/classification/test/'
-model_dir = '/home/wupeilin/project/scene_detection/96.83'
+model_dir = '/home/wupeilin/project/scene_detection/ssd_mobilenet_v2'
 model_file = os.path.join(model_dir,'tflite_model.tflite')
+
 os.environ['CUDA_VISIBLE_DEVICES'] = "4"
 
 
 ''' Convert Pb to TFLite'''
 def pb2tflite_common():
     converter = tf.lite.TFLiteConverter.from_saved_model(model_dir)
+    converter.experimental_new_converter = True
 
     tflite_model = converter.convert()
 
     with open(model_file, 'wb') as f:
         f.write(tflite_model)
 def pb2tflite_aware():
-    converter = tf.lite.TFLiteConverter.from_saved_model(model_dir)
+    model = tf.keras.models.load_model(model_dir)
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS]
 
     quantized_tflite_model = converter.convert()
     with open(model_file, 'wb') as f:
@@ -143,8 +147,9 @@ def find_wrong_pics():
     print(f"一共检测{str(all_count)}张图片，错误了{str(wrong_count)}张。\n正确率为{str(1 - wrong_count / all_count)}")
 
 if __name__ == '__main__':
-    #pb2tflite_common()
+    #pb2tflite_aware()
     print("已转成tflite模型")
     #txt_result()
-    find_wrong_pics()
+    #find_wrong_pics()
+    pb2tflite_common()
     pass
