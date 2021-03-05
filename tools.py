@@ -252,7 +252,14 @@ def convert_from_save_model(model_save_path, _image_size=384, type="normal"):
 
 '''===================================Writen by Ge========================================================='''
 
-
+def h52tflite():
+    h5_file = os.path.join(model_dir,'saved_model.h5')
+    print(h5_file)
+    model = tf.keras.models.load_model(h5_file)
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    tflite_model = converter.convert()
+    with open(model_file, 'wb') as f:
+        f.write(tflite_model)
 
 
 if __name__ == '__main__':
@@ -260,8 +267,9 @@ if __name__ == '__main__':
     #pb2tflite_common()
     #pb2tflite_object('None')
     #pb2tflite_object('float16')
-    pb2tflite_object('int8')
+    #pb2tflite_object('int8')
     #detect_objects(model_file)
+    h52tflite()
     print("已转成tflite模型")
     #txt_result()
     #find_wrong_pics(model_file)
