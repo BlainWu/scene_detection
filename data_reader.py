@@ -39,6 +39,8 @@ def img_preprocess(image, image_size, normalization, train=True):
         image = tf.divide(image, std_RGB)
     elif normalization == "per":
         image = tf.image.per_image_standardization(image)
+    elif normalization == None:
+        image = image
 
     if train:
         # if random.random() > 0.5:

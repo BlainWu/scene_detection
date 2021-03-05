@@ -46,14 +46,17 @@ with strategy.scope():
     model = tf.keras.Sequential([
         base_model,
         # tf.keras.layers.BatchNormalization(),
-        tf.keras.layers.Conv2D(192, 3, activation='relu'),
+        #tf.keras.layers.Conv2D(192, 3, activation='relu'),
         #tf.keras.layers.Dropout(0.5),
+        tf.keras.layers.DepthwiseConv2D(5, activation='relu'),
+        tf.keras.layers.Conv2D(192, 1, activation="relu"),
+
         tf.keras.layers.GlobalAveragePooling2D(),
         tf.keras.layers.Dense(30, activation='softmax',kernel_regularizer=tf.keras.regularizers.l2(0.001))
         #tf.keras.layers.Dense(30, activation='softmax')
     ])
     '''LOSS AND OPTIMIZER!!!'''
-    losses = tf.losses.CategoricalCrossentropy(label_smoothing=0.05)
+    losses = tf.losses.CategoricalCrossentropy() #label_smoothing=0.05
     optimizer = tf.keras.optimizers.Adagrad(learning_rate=0.01)
 
     model.compile(optimizer=optimizer,
