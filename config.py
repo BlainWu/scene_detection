@@ -1,14 +1,14 @@
 IMAGE_SIZE = 224
 IMG_SHAPE = (IMAGE_SIZE, IMAGE_SIZE, 3)
 
-GPU = "2"
+GPU = "0"
 BATCH_SIZE = 32
 EPOCHS_TRAIN = 10
 EPOCHS_FINE = 100
 FINE_TUNE_START = 0
 NORMALIZATION = "per"
 
-train_data_path = '/home/share/competition/classification/train_2_8'
+train_data_path = "/home/share/competition/classification/train_2_8/"
 val_data_path = '/home/share/competition/classification/val_true'
 
 

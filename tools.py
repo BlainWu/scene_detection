@@ -86,8 +86,8 @@ def pb2tflite_aware():
         f.write(quantized_tflite_model)
 
 
-'''生成可提交的txt文件* 手动删除最后一行空行'''
-def txt_result():
+'''生成可提交的txt文件'''
+def generate_result():
     print("Model Name:", model_file, "Create Time:", get_FileCreateTime(model_file))
 
     interpreter = interpreter_wrapper.Interpreter(model_path=model_file)
@@ -252,14 +252,18 @@ def convert_from_save_model(model_save_path, _image_size=384, type="normal"):
 
 '''===================================Writen by Ge========================================================='''
 
-def h52tflite():
-    h5_file = os.path.join(model_dir,'saved_model.h5')
-    print(h5_file)
-    model = tf.keras.models.load_model(h5_file)
-    converter = tf.lite.TFLiteConverter.from_keras_model(model)
-    tflite_model = converter.convert()
-    with open(model_file, 'wb') as f:
-        f.write(tflite_model)
+from tensorflow.python.framework.convert_to_constants import  convert_variables_to_constants_v2_as_graph
+def get_flops(model):
+    concrete = tf.function(lambda inputs: model(inputs))
+    concrete_func = concrete.get_concrete_function(
+        [tf.TensorSpec([1, *inputs.shape[1:]]) for inputs in model.inputs])
+    frozen_func, graph_def = convert_variables_to_constants_v2_as_graph(concrete_func)
+    with tf.Graph().as_default() as graph:
+        tf.graph_util.import_graph_def(graph_def, name='')
+        run_meta = tf.compat.v1.RunMetadata()
+        opts = tf.compat.v1.profiler.ProfileOptionBuilder.float_operation()
+        flops = tf.compat.v1.profiler.profile(graph=graph, run_meta=run_meta, cmd="op", options=opts)
+        return flops.total_float_ops
 
 
 if __name__ == '__main__':
@@ -269,7 +273,6 @@ if __name__ == '__main__':
     #pb2tflite_object('float16')
     #pb2tflite_object('int8')
     #detect_objects(model_file)
-    h52tflite()
     print("已转成tflite模型")
     #txt_result()
     #find_wrong_pics(model_file)

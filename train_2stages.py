@@ -10,6 +10,9 @@ from utils import draw_train_history, mkdir
 from shutil import copyfile
 import os
 
+from tools import get_flops
+
+
 '''General Setting'''
 os.environ['CUDA_VISIBLE_DEVICES'] = GPU
 
@@ -56,6 +59,8 @@ with strategy.scope():
         #tf.keras.layers.Dense(30, activation='softmax')
     ])
     '''LOSS AND OPTIMIZER!!!'''
+    model.summary()
+    print("FLOPs:{}M".format(get_flops(model)) ,flush=True)
     losses = tf.losses.CategoricalCrossentropy() #label_smoothing=0.05
     optimizer = tf.keras.optimizers.Adagrad(learning_rate=0.01)
 
@@ -95,7 +100,7 @@ model.compile(
     loss=losses,
     optimizer=optimizer,
     metrics=['accuracy'])
-print(model.summary())
+model.summary()
 '''Training'''
 history_fine = model.fit(train_generator,
                          steps_per_epoch=len(train_generator),
