@@ -3,8 +3,8 @@ Real-time Scene Detection
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)  
 
 ## To-do-list
-- [ ] 使用ReLabel策略
-- [ ] 数据增强进一步扩充和整合
+- [x] 使用ReLabel策略
+- [x] 数据增强进一步扩充和整合
 
 ## 目录树
 ├─dataset  

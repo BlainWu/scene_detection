@@ -39,7 +39,13 @@ def img_preprocess(image, image_size, normalization, train=True):
         image = tf.divide(image, std_RGB)
     elif normalization == "per":
         image = tf.image.per_image_standardization(image)
-    elif normalization == None:
+    elif normalization == 'self':
+        mean_RGB = tf.constant([108.037, 104.083, 95.793], dtype=tf.float32)
+        std_RGB = tf.constant([58.102, 54.242, 55.215], dtype=tf.float32)
+        image = tf.image.per_image_standardization(image)
+        image = tf.subtract(image, mean_RGB)
+        image = tf.divide(image, std_RGB)
+    elif normalization == 'None':
         image = image
 
     if train:

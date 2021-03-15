@@ -13,15 +13,15 @@ import os
 from tools import get_flops
 os.environ['CUDA_VISIBLE_DEVICES'] = GPU
 
+log_index = len(os.listdir('./save'))
 train_name = \
-    "t" + str(time.strftime("%Y_%m_%d_%H_%M", time.localtime())) + \
-    "_mb2_" + str(IMAGE_SIZE) + \
-    "_b" + str(BATCH_SIZE) + \
-    "_fs" + str(FINE_TUNE_START)
+    str(log_index)
 save_path = "save/" + train_name
 train_log_path = os.path.join(save_path, "log_train")
 fine_log_path = os.path.join(save_path, "log_fine")
-print(train_name)
+print("-----------------------------")
+print("实验编号：",train_name)
+print("-----------------------------")
 mkdir(save_path)
 mkdir(train_log_path)
 mkdir(fine_log_path)
@@ -38,6 +38,8 @@ with strategy.scope():
                                                    include_top=False,
                                                    alpha=1.0,
                                                    weights='imagenet',
+                                                    #dropout_rate=0.2,
+                                                    #pooling='max',
                                                     )
     '''
     base_model = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=IMG_SHAPE,
@@ -49,13 +51,11 @@ with strategy.scope():
     base_model.trainable = True
     model = tf.keras.Sequential([
         base_model,
-        # tf.keras.layers.BatchNormalization(),
         #tf.keras.layers.Conv2D(192, 3, activation='relu'),
-        #tf.keras.layers.Dropout(0.5),
         tf.keras.layers.DepthwiseConv2D(5, activation='relu'),
         #tf.keras.layers.Conv2D(192, 1),
         tf.keras.layers.Conv2D(192, 1, activation="relu"),
-
+        tf.keras.layers.Dropout(0.5),
         tf.keras.layers.GlobalAveragePooling2D(),
         tf.keras.layers.Dense(30, activation='softmax',kernel_regularizer=tf.keras.regularizers.l2(0.001))
         #tf.keras.layers.Dense(30, activation='softmax')

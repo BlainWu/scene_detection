@@ -17,6 +17,10 @@ def update_csv():
         if tmp['Name'] == 'stvea':
             tmp['Time'] = 10.0
             tmp['Top-1'] = 96.5
+        
+        if tmp['Name'] == 'peilin':
+            tmp['Time'] = 28.0
+            tmp['Top-1'] = 96.83
         '''
         # -----------------------------------------------
         usr_dic.append(tmp)
