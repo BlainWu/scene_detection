@@ -28,6 +28,7 @@ def img_preprocess(image, image_size, normalization, train=True):
     image = tf.cast(image, tf.float32)
     # image = tf.image.rgb_to_hsv(image)
     image = tf.image.resize(image, [image_size, image_size])
+    #image = tf.image.central_crop(image,central_fraction=0.3)
 
     if normalization == "255":
         image = (image / 255.0)
@@ -52,6 +53,7 @@ def img_preprocess(image, image_size, normalization, train=True):
         # if random.random() > 0.5:
         image = tf.image.random_brightness(image, max_delta=0.2)
         image = tf.image.random_contrast(image, lower=0.7, upper=1)
+        pass
         #image = random_rot(image)
     # # # 随机色相
     # # image = tf.image.random_hue(image, max_delta=0.1)

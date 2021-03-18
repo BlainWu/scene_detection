@@ -2,6 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 import time
+from silence_tensorflow import silence_tensorflow
+silence_tensorflow()
 
 import tensorflow as tf
 from config import *
@@ -12,10 +14,11 @@ import os
 
 from tools import get_flops
 os.environ['CUDA_VISIBLE_DEVICES'] = GPU
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 log_index = len(os.listdir('./save'))
 train_name = \
-    str(log_index)
+    str(log_index + 100)
 save_path = "save/" + train_name
 train_log_path = os.path.join(save_path, "log_train")
 fine_log_path = os.path.join(save_path, "log_fine")
@@ -31,16 +34,19 @@ copyfile("config.py", os.path.join(save_path, "config.py"))
 losses = tf.losses.CategoricalCrossentropy(label_smoothing=0.05)
 optimizer = tf.keras.optimizers.Adagrad(learning_rate=0.01)
 
+from models.MobileNetV3 import MobileNetV3Large
+print("MobileNetV3Small")
 strategy = tf.distribute.MirroredStrategy()
 with strategy.scope():
 
-    base_model = tf.keras.applications.MobileNetV3Large(input_shape=IMG_SHAPE,
+    base_model = MobileNetV3Large(input_shape=IMG_SHAPE,
                                                    include_top=False,
                                                    alpha=1.0,
                                                    weights='imagenet',
-                                                    #dropout_rate=0.2,
+                                                    dropout_rate=0,
                                                     #pooling='max',
                                                     )
+    #base_model.summary()
     '''
     base_model = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=IMG_SHAPE,
                                                               include_top=False,
@@ -60,8 +66,8 @@ with strategy.scope():
         tf.keras.layers.Dense(30, activation='softmax',kernel_regularizer=tf.keras.regularizers.l2(0.001))
         #tf.keras.layers.Dense(30, activation='softmax')
     ])
-    model.summary()
-    print("该模型的FLOPs:%.5fM"%(get_flops(model)/10**6) ,flush=True)
+    #model.summary()
+    #print("该模型的FLOPs:%.5fM"%(get_flops(model)/10**6) ,flush=True)
 
 
 
@@ -69,6 +75,9 @@ with strategy.scope():
                   # loss='categorical_crossentropy',
                   loss=losses,
                   metrics=['accuracy'])
+
+'''Frozen forward layer'''
+base_model.trainable = True
 
 '''Get Data'''
 train_generator = get_train_data()
@@ -91,11 +100,7 @@ draw_train_history(history)
 
 '''Part2 fine tuning'''
 
-'''Frozen forward layer'''
-base_model.trainable = True
 
-for layer in base_model.layers[:FINE_TUNE_START]:
-    layer.trainable = True
 
 model.compile(
     loss=losses,

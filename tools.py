@@ -4,6 +4,7 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorflow.lite.python import interpreter as interpreter_wrapper
 from data_reader import load_image
 from utils import get_FileCreateTime
@@ -137,8 +138,8 @@ def evaluate_acc(model_file,output_wrong = False,image_size = IMAGE_SIZE):
 
     floating_model = False
 
-    #if input_details[0]['dtype'] == type(np.float32(1.0)):
-    #    floating_model = True
+    if input_details[0]['dtype'] == type(np.float32(1.0)):
+        floating_model = True
     # Process test_model images and display the results
     cls_list = os.listdir(val_path)
     cls_list.sort(key=lambda x: int(x.split('_')[0]))
@@ -146,8 +147,7 @@ def evaluate_acc(model_file,output_wrong = False,image_size = IMAGE_SIZE):
     top1_wrong_count = 0
     top3_wrong_count = 0
     all_count = 0
-
-    for index, cls in enumerate(tqdm(cls_list) ):
+    for index, cls in enumerate(tqdm(cls_list)):
         cls_path = os.path.join(val_path, cls)
         img_list = os.listdir(cls_path)
         for img in img_list:
@@ -157,10 +157,10 @@ def evaluate_acc(model_file,output_wrong = False,image_size = IMAGE_SIZE):
             image = np.reshape(image, (1, image_size, image_size, 3))
             input_data = image
 
-            #if floating_model:
-            #    input_data = np.float32(input_data)
-            #else:
-            #    input_data = np.uint8(input_data)
+            if floating_model:
+                input_data = np.float32(input_data)
+            else:
+                input_data = np.uint8(input_data)
 
             interpreter.set_tensor(input_details[0]['index'], input_data)
             interpreter.invoke()
@@ -178,7 +178,6 @@ def evaluate_acc(model_file,output_wrong = False,image_size = IMAGE_SIZE):
                 if index not in prediction_top_3_list:
                     top3_wrong_count += 1
             all_count += 1
-
     print(f"Top1错误了{str(top1_wrong_count)}张。\nTo1 正确率为{str(1 - top1_wrong_count / all_count)}")
     print(f"Top3错误了{str(top3_wrong_count)}张。\nTo3 正确率为{str(1 - top3_wrong_count / all_count)}")
     print('------------------------------------')
@@ -219,11 +218,11 @@ def convert_from_save_model(model_save_path, _image_size=224, type="normal"):
         converter.target_spec.supported_types = [tf.float16]
         tflite_save_path = os.path.join(model_save_path, 'tflite_model_float16.tflite')
     elif type == "int8":
-        #converter.optimizations = [tf.lite.Optimize.DEFAULT]
-        converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+        converter.optimizations = [tf.lite.Optimize.DEFAULT]
         converter.representative_dataset = representative_dataset
         # Ensure that if any ops can't be quantized, the converter throws an error
         # Set the input and output tensors to uint8 (APIs added in r2.3)
+        converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
         converter.inference_input_type = tf.uint8
         converter.inference_output_type = tf.uint8
         tflite_save_path = os.path.join(model_save_path, 'tflite_model_int8.tflite')
@@ -235,13 +234,14 @@ def convert_from_save_model(model_save_path, _image_size=224, type="normal"):
             print(f"已生成模型：{tflite_save_path}")
 
 def convert_test_all_in_one(_image_size = 224,convert = True,eval = True):
+    print(model_dir)
     if convert:
         types = ['normal','float16','int8','only-opt']
         for type in types:
             convert_from_save_model(model_dir,_image_size,type = type)
 
     if eval:
-        models = ['tflite_model','tflite_model_float16','tflite_model_opt']
+        models = ['tflite_model','tflite_model_float16','tflite_model_opt','tflite_model_int8']#
         for model in models:
             file_path = os.path.join(model_dir,f'{model}.tflite')
             evaluate_acc(file_path,image_size = _image_size)
@@ -282,14 +282,15 @@ if __name__ == '__main__':
     #pb2tflite_object('float16')
     #pb2tflite_object('int8')
     #detect_objects(model_file)
-    convert_test_all_in_one(_image_size=264,convert = False,eval = True)
+    print("16 48")
+    convert_test_all_in_one(_image_size=264,convert = True,eval = True)
     #generate_result(_image_size=264,type = 'normal')
     #print("已转成tflite模型")
-    #generate_result()
+    #generate_result(_image_size = 264,type = 'only-opt')
     #find_wrong_pics(model_file)
     #convert_from_save_model(model_dir,_image_size=384,type = "full_int")
     #find_wrong_pics(model_file = os.path.join(model_dir,'full_int_model.tflite')) #tflite_model  saved_model_float16
     #find_wrong_pics(model_file = "/home/wupeilin/project/scene_detection/quanti_ware_test/tflite_model.tflite")
-
     #calculate_mean_std('/home/share/competition/classification/train_2_8/')
+
     pass

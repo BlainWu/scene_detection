@@ -135,7 +135,7 @@ BASE_DOCSTRING = """Instantiates the {name} architecture.
     ValueError: if `classifier_activation` is not `softmax` or `None` when
       using a pretrained top layer.
 """
-
+momentum = 0.0001
 
 def MobileNetV3(stack_fn,
                 last_point_ch,
@@ -261,7 +261,7 @@ def MobileNetV3(stack_fn,
         name='Conv')(x)
     x = layers.BatchNormalization(
         axis=channel_axis, epsilon=1e-3,
-        momentum=0.999, name='Conv/BatchNorm')(x)
+        momentum=momentum, name='Conv/BatchNorm')(x)
     x = activation(x)
 
     x = stack_fn(x, kernel, activation, se_ratio)
@@ -280,7 +280,7 @@ def MobileNetV3(stack_fn,
         name='Conv_1')(x)
     x = layers.BatchNormalization(
         axis=channel_axis, epsilon=1e-3,
-        momentum=0.999, name='Conv_1/BatchNorm')(x)
+        momentum=momentum, name='Conv_1/BatchNorm')(x)
     x = activation(x)
     x = layers.Conv2D(
         last_point_ch,
@@ -491,7 +491,7 @@ def _inverted_res_block(x, expansion, filters, kernel_size, stride, se_ratio,
         x = layers.BatchNormalization(
             axis=channel_axis,
             epsilon=1e-3,
-            momentum=0.999,
+            momentum=momentum,
             name=prefix + 'expand/BatchNorm')(
             x)
         x = activation(x)
@@ -511,8 +511,8 @@ def _inverted_res_block(x, expansion, filters, kernel_size, stride, se_ratio,
     x = layers.BatchNormalization(
         axis=channel_axis,
         epsilon=1e-3,
-        momentum=0.999,
-        name=prefix + 'depthwise/BatchNorm')(
+        momentum=momentum,
+        name=prefix + 'depthwise/BatchNorm',)(
         x)
     x = activation(x)
 
@@ -529,7 +529,7 @@ def _inverted_res_block(x, expansion, filters, kernel_size, stride, se_ratio,
     x = layers.BatchNormalization(
         axis=channel_axis,
         epsilon=1e-3,
-        momentum=0.999,
+        momentum=momentum,
         name=prefix + 'project/BatchNorm')(
         x)
 
